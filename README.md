@@ -2,6 +2,8 @@
 
 **Conditional Trading** is a modification for the game *Stronghold Crusader HD* that adds conditional trading functionality. This mod has been tested with version 1.41 of the game and is also compatible with the Extreme version.
 
+<img src="screenshot.jpg" alt="Mod Menu Screenshot" width="600"/>
+
 ## How to Use
 
 1. **Open/Close Menu:**
