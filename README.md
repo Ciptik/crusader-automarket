@@ -1,6 +1,6 @@
 # Stronghold Crusader HD Conditional Trading
 
-**Conditional Trading** is a modification for the game *Stronghold Crusader HD* that adds conditional trading functionality. This mod has been tested with version 1.41 of the game and is also compatible with the Extreme version.
+**Conditional Trading** is a modification for the game Stronghold Crusader HD that adds conditional trading functionality. This mod has been successfully tested with versions 1.3 and 1.41 of the game, both in Russian and English editions, and is also compatible with the Extreme version.
 
 <img src="screenshot.jpg" alt="Mod Menu Screenshot" width="600"/>
 
@@ -14,9 +14,11 @@
 
 3. **Set Sale Threshold:**
    - The `sale >` field defines the threshold above which the product will be sold. If the stock quantity is greater than this value, the product will be sold.
+   - You can increase or decrease this value using the + and - buttons. You can also hold down these buttons to continuously and rapidly adjust the value.
 
 4. **Set Buy Threshold:**
    - The `buy <` field defines the threshold below which the product will be purchased. If the stock quantity is less than this value, the product will be purchased.
+   - You can increase or decrease this value using the + and - buttons. You can also hold down these buttons to continuously and rapidly adjust the value.
 
 5. **Default Settings:**
    - By default, all products have a `sale` threshold of 500 and an empty `buy` threshold.
