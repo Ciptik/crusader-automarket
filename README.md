@@ -46,26 +46,32 @@ To compile the mod from source, follow these steps:
 4. **Clone the Repository:**
    ```bash
    git clone --recurse-submodules https://github.com/Ciptik/crusader-automarket.git
+   ```
 
-5. **Create a Build Directory:**
+5. **Go to the project folder**
+   ```bash
+   cd crusader-automarket
+   ```
+
+6. **Create a Build Directory:**
    ```bash
    mkdir build
    ```
 
-6. **Navigate to the Build Directory:**
+7. **Navigate to the Build Directory:**
    ```bash
    cd build
    ```
 
-7. **Generate Build Files with CMake:**
+8. **Generate Build Files with CMake:**
    ```bash
    cmake -G "MinGW Makefiles" ..
    ```
 
-8. **Compile the Project:**
+9. **Compile the Project:**
    ```bash
    mingw32-make
    ```
 
-9. **Verify the Build:**
+10. **Verify the Build:**
    - Upon successful compilation, the `dplayx.dll` file will be generated in the `build` directory. Move this file to the root directory of your *Stronghold Crusader HD* game to apply the mod.
