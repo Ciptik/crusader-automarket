@@ -1,6 +1,6 @@
 # Stronghold Crusader HD Conditional Trading
 
-**Conditional Trading** is a modification for the game Stronghold Crusader HD that adds conditional trading functionality. This mod has been successfully tested with versions 1.3 and 1.41 of the game, both in Russian and English editions, and is also compatible with the Extreme version.
+**Stronghold Crusader HD AutoMarket Mod (Conditional Trading)** is a modification for the game Stronghold Crusader HD that adds conditional trading functionality. This mod has been successfully tested with versions 1.3 and 1.41 of the game, both in Russian and English editions, and is also compatible with the Extreme version.
 
 <img src="screenshot.jpg" alt="Mod Menu Screenshot" width="600"/>
 
