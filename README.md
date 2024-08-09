@@ -35,7 +35,7 @@
 
 To compile the mod from source, follow these steps:
 
-1. **Install MSYS2 MINGW:**
+1. **Install MSYS2:**
    - Download and install MSYS2 from [MSYS2.org](https://www.msys2.org/).
 
 2. **Open MSYS2 MINGW32:**
