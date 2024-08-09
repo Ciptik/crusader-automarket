@@ -83,4 +83,4 @@ To compile the mod from source, follow these steps:
 
 If you find this project helpful, I would greatly appreciate your support. You can send donations to the following cryptocurrency address:
 
-**TON:** `UQDQStE3LfvdbjDaPQuCSU8oXzkT_PUYmnO5CPD8-6k4ZdIf`
+**USDT (TRC20):** `TRgeV6eHbQHF7uVrGRor3T3wUGmbxkFkHy`
