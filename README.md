@@ -78,3 +78,9 @@ To compile the mod from source, follow these steps:
 
 10. **Verify the Build:**
    - Upon successful compilation, the `dplayx.dll` file will be generated in the `build` directory. Move this file to the root directory of your *Stronghold Crusader HD* game to apply the mod.
+
+## Project Support
+
+If you find this project helpful, I would greatly appreciate your support. You can send donations to the following cryptocurrency address:
+
+**TON:** `UQDQStE3LfvdbjDaPQuCSU8oXzkT_PUYmnO5CPD8-6k4ZdIf`
