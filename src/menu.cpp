@@ -245,4 +245,10 @@ namespace Menu
     bool IsOpenMenu() {
         return isMenuActive;
     }
+
+    RECT GetClipRect() {
+        RECT rectClip = menuCanvas;
+        OffsetRect(&rectClip, x, y);
+        return rectClip;
+    }
 }

@@ -19,6 +19,7 @@ namespace Menu
     void DrawBackground(RECT rect);
     void SetContext(HDC newHdc);
     bool IsOpenMenu();
+    RECT GetClipRect();
 }
 
 #endif // MENU_HPP
