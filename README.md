@@ -30,7 +30,7 @@
 
 1. Download the `dplayx.dll` file from the [Releases page](https://github.com/Ciptik/crusader-automarket/releases).
 2. Place the `dplayx.dll` file in the root directory of your *Stronghold Crusader HD* game.
-3. Now the mod is installed and you can log in to the game.
+3. Now the mod is installed and you can run the game.
 
 ## Compilation from Source
 
