@@ -219,70 +219,26 @@ void executeTrade() {
     }
 }
 
-void DrawRedSquare(IDirectDrawSurface* pSurface, int x, int y, int width, int height) {
-    // Блокируем поверхность, чтобы получить доступ к пиксельным данным
-    DDSURFACEDESC ddsd;
-    ZeroMemory(&ddsd, sizeof(ddsd));
-    ddsd.dwSize = sizeof(ddsd);
-
-    HRESULT hr = pSurface->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_SURFACEMEMORYPTR, NULL);
-    if (FAILED(hr)) {
-        // Ошибка при блокировке поверхности
-        return;
-    }
-
-    // Получаем указатель на пиксельный буфер
-    uint16_t* pixelBuffer = static_cast<uint16_t*>(ddsd.lpSurface);
-    int pitch = ddsd.lPitch / sizeof(uint16_t);  // Количество пикселей в одной строке (Pitch)
-
-    // Определяем цвет красного в формате RGB565
-    uint16_t redColor = 0xF800; // RGB565 для красного цвета
-
-    // Рисуем квадрат
-    for (int py = y; py < y + height; ++py) {
-        if (py < 0 || py >= ddsd.dwHeight) continue;  // Проверяем границы по высоте
-        uint16_t* row = pixelBuffer + py * pitch;
-        for (int px = x; px < x + width; ++px) {
-            if (px < 0 || px >= ddsd.dwWidth) continue;  // Проверяем границы по ширине
-            row[px] = redColor;
-        }
-    }
-
-    // Разблокируем поверхность после работы с буфером
-    pSurface->Unlock(NULL);
-}
-
-void CopyRenderResult(uint16_t* destBuffer, uint32_t* srcBuffer) {
+void CopyRenderResult(uint16_t* destBuffer, uint32_t* srcBuffer, int surfaceWidth, int surfaceHeight, int pitch) {
     RECT rectClip = Menu::GetClipRect();
 
-    // Извлекаем координаты области для копирования
     int xStart = rectClip.left;
     int xEnd = rectClip.right;
     int yStart = rectClip.top;
     int yEnd = rectClip.bottom;
 
-    int width, height;
-    GetWindowSize(width, height);
-
-    // Определяем ширину и высоту буферов
-    int bufferWidth = width;  // Предполагается, что эта функция возвращает ширину буфера
-
     for (int y = yStart; y < yEnd; ++y) {
-        for (int x = xStart; x < xEnd; ++x) {
-            // Индекс текущего пикселя
-            int index = y * bufferWidth + x;
+        uint16_t* destRow = (uint16_t*)((BYTE*)destBuffer + y * pitch);
+        uint32_t* srcRow = srcBuffer + y * surfaceWidth;
 
-            // Извлекаем цвет из srcBuffer (ARGB формат)
-            uint32_t argb = srcBuffer[index];
+        for (int x = xStart; x < xEnd; ++x) {
+            uint32_t argb = srcRow[x];
             uint8_t r = (argb >> 16) & 0xFF;
             uint8_t g = (argb >> 8) & 0xFF;
             uint8_t b = argb & 0xFF;
 
-            // Преобразуем цвет в формат RGB565
             uint16_t rgb565 = ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3);
-
-            // Записываем преобразованный цвет в destBuffer
-            destBuffer[index] = rgb565;
+            destRow[x] = rgb565;
         }
     }
 }
@@ -304,32 +260,30 @@ HRESULT WINAPI MyBlt(IDirectDrawSurface* pDestSurface, LPCRECT lpDestRect, IDire
     ddsd.dwSize = sizeof(ddsd);
 
     if (FAILED(pDestSurface->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_SURFACEMEMORYPTR, NULL))) {
-        return E_FAIL; // Не удалось заблокировать поверхность
+        return E_FAIL;
     }
 
     BITMAPINFO bmi;
     ZeroMemory(&bmi, sizeof(BITMAPINFO));
     bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
     bmi.bmiHeader.biWidth = ddsd.dwWidth;
-    bmi.bmiHeader.biHeight = -static_cast<int>(ddsd.dwHeight); // Отрицательная высота для верхнего левого начала
+    bmi.bmiHeader.biHeight = -static_cast<int>(ddsd.dwHeight);
     bmi.bmiHeader.biPlanes = 1;
-    bmi.bmiHeader.biBitCount = 32; // 32 бита на пиксель (8 бит на канал RGB + 8 бит на альфа-канал или просто 0)
-    bmi.bmiHeader.biCompression = BI_RGB; // BI_RGB означает отсутствие сжатия
+    bmi.bmiHeader.biBitCount = 32;
+    bmi.bmiHeader.biCompression = BI_RGB;
 
-    // Создаем HBITMAP и привязываем его к пиксельному буферу
-    void* pPixels = NULL; // Передаем NULL для выделения памяти
+    void* pPixels = NULL;
     HBITMAP hBitmap = CreateDIBSection(NULL, &bmi, DIB_RGB_COLORS, &pPixels, NULL, 0);
     if (!hBitmap) {
         pDestSurface->Unlock(NULL);
-        return E_FAIL; // Не удалось создать HBITMAP
+        return E_FAIL;
     }
 
-    // Создаем совместимый HDC и выбираем HBITMAP
     HDC hdc = CreateCompatibleDC(NULL);
     if (!hdc) {
         DeleteObject(hBitmap);
         pDestSurface->Unlock(NULL);
-        return E_FAIL; // Не удалось создать совместимый HDC
+        return E_FAIL;
     }
 
     HBITMAP hOldBitmap = (HBITMAP)SelectObject(hdc, hBitmap);
@@ -340,18 +294,15 @@ HRESULT WINAPI MyBlt(IDirectDrawSurface* pDestSurface, LPCRECT lpDestRect, IDire
     Menu::DrawBackground(RECT{0, 0, 300, 139});
     Menu::DrawTextField(RECT{5, 5, 95, 34}, L"product");
     Menu::DrawTextField(RECT{99, 5, 294, 34}, ConvertToWString(currentProductName).c_str(), TEXT_ALIGN_LEFT);
-
     Menu::DrawTextField(RECT{5, 38, 95, 67}, L"sale >");
     Menu::DrawNumericField(RECT{99, 38, 294, 67}, RECT{210, 40, 249, 65}, RECT{253, 40, 292, 65}, productSettings[currentProductName]["sale"], 0, 500);
-
     Menu::DrawTextField(RECT{5, 71, 95, 100}, L"buy <");
     Menu::DrawNumericField(RECT{99, 71, 294, 100}, RECT{210, 73, 249, 98}, RECT{253, 73, 292, 98}, productSettings[currentProductName]["buy"], 0, 500);
-
     Menu::DrawButton(RECT{5, 104, 186, 133}, L"reset all settings", ResetAllSettings);
     Menu::DrawButton(RECT{190, 104, 239, 133}, L"←", ChoosePrevProduct);
     Menu::DrawButton(RECT{243, 104, 292, 133}, L"→", ChooseNextProduct);
 
-    CopyRenderResult((uint16_t*)ddsd.lpSurface, (uint32_t*)pPixels);
+    CopyRenderResult((uint16_t*)ddsd.lpSurface, (uint32_t*)pPixels, ddsd.dwWidth, ddsd.dwHeight, ddsd.lPitch);
 
     SelectObject(hdc, hOldBitmap);
     DeleteObject(hBitmap);
