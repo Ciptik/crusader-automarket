@@ -198,7 +198,7 @@ std::chrono::milliseconds GetTimeSinceLastTtrade() {
     return std::chrono::duration_cast<std::chrono::milliseconds>(current - start);
 }
 
-void executeTrade() {
+void ExecuteTrade() {
     if (GetTimeSinceLastTtrade() >= tradingFrequency) {
         for (const auto& [productName, info] : productSettings) {
             int sale = info.at("sale");
@@ -219,78 +219,25 @@ void executeTrade() {
     }
 }
 
-void CopyRenderResult(uint16_t* destBuffer, uint32_t* srcBuffer, int surfaceWidth, int surfaceHeight, int pitch) {
-    RECT rectClip = Menu::GetClipRect();
-
-    int xStart = rectClip.left;
-    int xEnd = rectClip.right;
-    int yStart = rectClip.top;
-    int yEnd = rectClip.bottom;
-
-    for (int y = yStart; y < yEnd; ++y) {
-        uint16_t* destRow = (uint16_t*)((BYTE*)destBuffer + y * pitch);
-        uint32_t* srcRow = srcBuffer + y * surfaceWidth;
-
-        for (int x = xStart; x < xEnd; ++x) {
-            uint32_t argb = srcRow[x];
-            uint8_t r = (argb >> 16) & 0xFF;
-            uint8_t g = (argb >> 8) & 0xFF;
-            uint8_t b = argb & 0xFF;
-
-            uint16_t rgb565 = ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3);
-            destRow[x] = rgb565;
-        }
-    }
-}
-
 HRESULT WINAPI MyBlt(IDirectDrawSurface* pDestSurface, LPCRECT lpDestRect, IDirectDrawSurface* pSrcSurface, LPCRECT lpSrcRect, DWORD dwFlags, LPDDBLTFX lpDDBltFx) {
-    executeTrade();
+    ExecuteTrade();
 
     HRESULT hr = oBlt(pDestSurface, lpDestRect, pSrcSurface, lpSrcRect, dwFlags, lpDDBltFx);
 
-    if (FAILED(hr)) {
+    if (FAILED(hr))
         return hr;
-    }
 
     if (!Menu::IsOpenMenu())
         return hr;
 
-    DDSURFACEDESC ddsd;
-    ZeroMemory(&ddsd, sizeof(ddsd));
-    ddsd.dwSize = sizeof(ddsd);
+    HDC hDC;
 
-    if (FAILED(pDestSurface->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_SURFACEMEMORYPTR, NULL))) {
+    if (!SUCCEEDED(pDestSurface->GetDC(&hDC)))
         return E_FAIL;
-    }
-
-    BITMAPINFO bmi;
-    ZeroMemory(&bmi, sizeof(BITMAPINFO));
-    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bmi.bmiHeader.biWidth = ddsd.dwWidth;
-    bmi.bmiHeader.biHeight = -static_cast<int>(ddsd.dwHeight);
-    bmi.bmiHeader.biPlanes = 1;
-    bmi.bmiHeader.biBitCount = 32;
-    bmi.bmiHeader.biCompression = BI_RGB;
-
-    void* pPixels = NULL;
-    HBITMAP hBitmap = CreateDIBSection(NULL, &bmi, DIB_RGB_COLORS, &pPixels, NULL, 0);
-    if (!hBitmap) {
-        pDestSurface->Unlock(NULL);
-        return E_FAIL;
-    }
-
-    HDC hdc = CreateCompatibleDC(NULL);
-    if (!hdc) {
-        DeleteObject(hBitmap);
-        pDestSurface->Unlock(NULL);
-        return E_FAIL;
-    }
-
-    HBITMAP hOldBitmap = (HBITMAP)SelectObject(hdc, hBitmap);
 
     std::string currentProductName = availableProducts[indexCurrentProduct];
 
-    Menu::SetContext(hdc);
+    Menu::SetContext(hDC);
     Menu::DrawBackground(RECT{0, 0, 300, 139});
     Menu::DrawTextField(RECT{5, 5, 95, 34}, L"product");
     Menu::DrawTextField(RECT{99, 5, 294, 34}, ConvertToWString(currentProductName).c_str(), TEXT_ALIGN_LEFT);
@@ -302,13 +249,7 @@ HRESULT WINAPI MyBlt(IDirectDrawSurface* pDestSurface, LPCRECT lpDestRect, IDire
     Menu::DrawButton(RECT{190, 104, 239, 133}, L"←", ChoosePrevProduct);
     Menu::DrawButton(RECT{243, 104, 292, 133}, L"→", ChooseNextProduct);
 
-    CopyRenderResult((uint16_t*)ddsd.lpSurface, (uint32_t*)pPixels, ddsd.dwWidth, ddsd.dwHeight, ddsd.lPitch);
-
-    SelectObject(hdc, hOldBitmap);
-    DeleteObject(hBitmap);
-    DeleteDC(hdc);
-
-    pDestSurface->Unlock(NULL);
+    pDestSurface->ReleaseDC(hDC);
 
     return hr;
 }
